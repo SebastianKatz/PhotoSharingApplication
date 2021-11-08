@@ -8,15 +8,37 @@ using PhotoSharingApplication.Models;
 
 namespace PhotoSharingApplication.Controllers
 {
+    [ValueReporter]
     public class PhotoController : Controller
     {
         private PhotoSharingContext context = new PhotoSharingContext();
-        // GET: Photo
+
+        //
+        // GET: /Photo/
+
         public ActionResult Index()
         {
             return View("Index", context.Photos.ToList());
         }
 
+        [ChildActionOnly]
+        public ActionResult _PhotoGallery(int number = 0)
+        {
+            List<Photo> photos;
+            if (number == 0)
+            {
+                photos = context.Photos.ToList();
+            }
+            else
+            {
+                    photos = (from p in context.Photos orderby p.CreatedDate descending select p).Take(number).ToList();
+            }
+            return PartialView("_PhotoGallery", photos);
+
+        }
+
+
+        // GET: /Photo/Display/1
         public ActionResult Display(int id)
         {
             Photo photo = context.Photos.Find(id);
@@ -26,6 +48,8 @@ namespace PhotoSharingApplication.Controllers
             }
             return View("Display", photo);
         }
+
+        // GET: /Photo/Create
         public ActionResult Create()
         {
             Photo newPhoto = new Photo();
@@ -45,21 +69,17 @@ namespace PhotoSharingApplication.Controllers
             {
                 if (image != null)
                 {
-                    photo.ImageMimeType =
-                    image.ContentType;
-                    photo.PhotoFile = new
-                    byte[image.ContentLength];
-                    image.InputStream.Read(
-                    photo.PhotoFile, 0,
-                    image.ContentLength);
+                    photo.ImageMimeType = image.ContentType;
+                    photo.PhotoFile = new byte[image.ContentLength];
+                    image.InputStream.Read(photo.PhotoFile, 0, image.ContentLength);
                 }
+                context.Photos.Add(photo);
+                context.SaveChanges();
+                return RedirectToAction("Index");
             }
-            context.Photos.Add(photo);
-            context.SaveChanges();
-            return RedirectToAction("Index");
-
         }
 
+        // GET: /Photo/Delete/1
         public ActionResult Delete(int id)
         {
             Photo photo = context.Photos.Find(id);
@@ -79,21 +99,18 @@ namespace PhotoSharingApplication.Controllers
             context.SaveChanges();
             return RedirectToAction("Index");
         }
+
         public FileContentResult GetImage(int id)
         {
             Photo photo = context.Photos.Find(id);
             if (photo != null)
             {
-                return File(photo.PhotoFile,
-                photo.ImageMimeType);
+                return File(photo.PhotoFile, photo.ImageMimeType);
             }
             else
             {
                 return null;
             }
-
         }
-
-
     }
 }
