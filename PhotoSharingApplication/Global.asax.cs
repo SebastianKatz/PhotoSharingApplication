@@ -16,7 +16,7 @@ namespace PhotoSharingApplication
         {
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            Database.SetInitializer<PhotoSharingContext>(new PhotoSharingInitializer());
+            //Database.SetInitializer<PhotoSharingContext>(new PhotoSharingInitializer());
         }
     }
 }
